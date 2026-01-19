@@ -1,0 +1,51 @@
+.money-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.balance {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 16px;
+  color: #2563eb; /* biru */
+}
+
+.money-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.money-table th,
+.money-table td {
+  border: 1px solid #e5e7eb;
+  padding: 10px;
+}
+
+.money-table th {
+  background: #f3f4f6;
+}
+
+.money-table tr.income {
+  background: #d1fae5; /* hijau muda */
+}
+
+.money-table tr.expense {
+  background: #fee2e2; /* merah muda */
+}
+
+.money-table tr:hover {
+  background: #fef3c7; /* kuning muda highlight */
+}
+
+@media (max-width: 600px) {
+  .money-table th, .money-table td {
+    padding: 6px;
+    font-size: 0.85rem;
+  }
+}
