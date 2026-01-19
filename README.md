@@ -30,5 +30,3 @@ Ini adalah project **React.js** untuk **Daily Habit Tracker** dan **Money Manage
 
 ---
 
-## 📂 Struktur Project
-
