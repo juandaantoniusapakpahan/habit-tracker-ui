@@ -1,0 +1,72 @@
+.habit-wrapper {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  justify-content: center; /* table center */
+}
+
+.habit-container {
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  width: 100%;
+  overflow-x: auto;
+}
+
+.habit-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.habit-table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 700px;
+}
+
+.habit-table th,
+.habit-table td {
+  border: 1px solid #e5e7eb;
+  text-align: center;
+  padding: 8px;
+  font-size: 0.9rem;
+}
+
+.task-col {
+  position: sticky;
+  left: 0;
+  background: #f3f4f6;
+  font-weight: 500;
+  min-width: 120px;
+}
+
+.checkbox {
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  accent-color: #10b981; /* hijau */
+}
+
+.empty-cell {
+  color: #d1d5db;
+}
+
+.today-cell {
+  background: #fef3c7; /* highlight hari ini */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .habit-title { font-size: 1.2rem; }
+  .habit-table th, .habit-table td { padding: 6px; font-size: 0.8rem; }
+  .task-col { min-width: 100px; }
+}
+
+@media (max-width: 480px) {
+  .habit-title { font-size: 1rem; }
+  .habit-table th, .habit-table td { padding: 4px; font-size: 0.75rem; }
+  .task-col { min-width: 80px; }
+}
