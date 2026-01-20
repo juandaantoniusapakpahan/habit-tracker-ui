@@ -3,7 +3,7 @@ const BASE_URL = "http://localhost:8080/api";
 export async function fetchHabitTracker(userId, month) {
   try {
     const res = await fetch(`${BASE_URL}/todo-task/get-checklist-byMonth?userId=${userId}&month=${month}`, {
-      method: "POST", 
+      method: "POST",
       headers: { "Content-Type": "application/json" }
     });
 
@@ -58,16 +58,10 @@ export async function inactiveTodoTask(taskId) {
 }
 
 
-export async function getchMontlyTaskAvg(userId, month) {
-  return fetch(`${BASE_URL}get-prt-byMonth?userId=1&month=1`, {
-    method: "POST"
-  });
-}
-
 export async function fetchHabitTrackerReadonly(userId, month) {
   try {
     const res = await fetch(`${BASE_URL}/todo-task/get-checklist-byMonth?userId=${userId}&month=${month}`, {
-      method: "POST", 
+      method: "POST",
       headers: { "Content-Type": "application/json" }
     });
 
@@ -80,5 +74,25 @@ export async function fetchHabitTrackerReadonly(userId, month) {
     return response.data;
   } catch (err) {
     console.error("Fetch error:", err);
+  }
+}
+
+
+export async function getchMontlyTaskAvg(userId, month) {
+  try {
+    const res = await fetch(`${BASE_URL}/todo-task/get-prt-byMonth?userId=${userId}&month=${month}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    });
+
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+    const response = await res.json();
+    
+    // Kembalikan tasks-nya saja agar di UI tinggal pakai .map()
+    return response.data?.tasks || []; 
+  } catch (err) {
+    console.error("Fetch error:", err);
+    return []; // Kembalikan array kosong jika error
   }
 }

@@ -12,303 +12,230 @@ import "./css/HabitTracker.css";
 
 export default function HabitTracker({ userId }) {
   userId = userId || 1;
-
   const currentMonth = new Date().getMonth() + 1;
 
   const [data, setData] = useState(null);
-
-  // ===== NEW STATE (AMAN)
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
-  const [averageData, setAverageData] = useState(null);
+  const [averageData, setAverageData] = useState([]);
   const [readonlyData, setReadonlyData] = useState(null);
 
-  // state untuk add task
   const [showForm, setShowForm] = useState(false);
   const [taskName, setTaskName] = useState("");
   const [taskDesc, setTaskDesc] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
 
-  /** =========================
-   * LOAD MAIN TABLE (LAMA)
-   ========================== */
   const loadData = async () => {
     const result = await fetchHabitTracker(userId, currentMonth);
     setData(result);
   };
 
-  /** =========================
-   * LOAD READONLY TABLE (BARU)
-   ========================== */
   const loadReadonlyTable = async (month) => {
     const result = await fetchHabitTrackerReadonly(userId, month);
     setReadonlyData(result);
   };
 
   const loadAverage = async (month) => {
-    setAverageData(await getchMontlyTaskAvg(userId, month));
+    const result = await getchMontlyTaskAvg(userId, month);
+    setAverageData(result || []);
   };
 
   useEffect(() => {
     loadData();
     loadReadonlyTable(currentMonth);
-    //loadAverage(currentMonth);
+    loadAverage(currentMonth);
   }, [userId]);
 
-  if (!data) return <p>Loading...</p>;
+  if (!data) return <div className="loading-container"><p>Loading Data...</p></div>;
 
   const todayStr = data.today;
   const monthName = new Date(todayStr).toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric"
+    month: "long", year: "numeric"
   });
 
-  /** =========================
-   * CHECK / UNCHECK
-   ========================== */
   const handleToggle = async (taskId, checklist) => {
     const newChecked = !checklist.isChecked;
-
     setData(prev => ({
       ...prev,
       tasks: prev.tasks.map(task =>
-        task.id !== taskId
-          ? task
-          : {
-            ...task,
-            todoCheckLists: task.todoCheckLists.map(cl =>
-              cl.checkListId === checklist.checkListId
-                ? { ...cl, isChecked: newChecked }
-                : cl
-            )
-          }
+        task.id !== taskId ? task : {
+          ...task,
+          todoCheckLists: task.todoCheckLists.map(cl =>
+            cl.checkListId === checklist.checkListId ? { ...cl, isChecked: newChecked } : cl
+          )
+        }
       )
     }));
-
     try {
-      newChecked
-        ? await checkChecklist(checklist.checkListId)
-        : await uncheckChecklist(checklist.checkListId);
-    } catch {
-      loadData();
-    }
+      newChecked ? await checkChecklist(checklist.checkListId) : await uncheckChecklist(checklist.checkListId);
+    } catch { loadData(); }
   };
 
-  /** =========================
-   * ADD TASK
-   ========================== */
   const handleAddTask = async () => {
     if (!taskName.trim()) return alert("Task name wajib diisi");
-
-    await addTodoTask(userId, {
-      name: taskName,
-      description: taskDesc
-    });
-
-    setTaskName("");
-    setTaskDesc("");
-    setShowForm(false);
+    await addTodoTask(userId, { name: taskName, description: taskDesc });
+    setTaskName(""); setTaskDesc(""); setShowForm(false);
     loadData();
   };
 
-  /** =========================
-   * INACTIVE TASK
-   ========================== */
   const handleConfirmInactive = async () => {
     await inactiveTodoTask(selectedTaskId);
-    setShowConfirm(false);
-    setSelectedTaskId(null);
+    setShowConfirm(false); setSelectedTaskId(null);
     loadData();
   };
 
-
-
-  /** =========================
-   * MONTH PICKER HANDLER
-   ========================== */
-  const handleMonthChange = async (e) => {
-    const monthInt = parseInt(e.target.value);
-    setSelectedMonth(monthInt);
-    loadReadonlyTable(monthInt);
-    //loadAverage(monthInt)
-  };
-
-  return (
+ return (
     <div className="habit-wrapper">
       <div className="habit-container">
+        <h1 className="habit-title">{monthName.toUpperCase()}</h1>
 
-        {/* HEADER */}
-        <div className="habit-title">{monthName.toUpperCase()}</div>
-
-        {/* ADD TASK FORM */}
-        {showForm && (
-          <div className="add-task-overlay">
-            <div className="add-task-card">
-              <h3>Add New Task</h3>
-
-              <input
-                type="text"
-                placeholder="Task name"
-                value={taskName}
-                onChange={e => setTaskName(e.target.value)}
-              />
-
-              <textarea
-                placeholder="Description (optional)"
-                value={taskDesc}
-                onChange={e => setTaskDesc(e.target.value)}
-              />
-
-              <div className="form-actions">
-                <button className="btn-primary" onClick={handleAddTask}>
-                  Save
-                </button>
-                <button
-                  className="btn-secondary"
-                  onClick={() => setShowForm(false)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showConfirm && (
-          <div className="confirm-overlay">
-            <div className="confirm-card">
-              <h3>Confirmation</h3>
-              <p>Are you sure to inactive task?</p>
-
-              <div className="confirm-actions">
-                <button
-                  className="btn-secondary"
-                  onClick={() => setShowConfirm(false)}
-                >
-                  Cancel
-                </button>
-
-                <button
-                  className="btn-danger"
-                  onClick={handleConfirmInactive}
-                >
-                  Yes, Inactive
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-        {/* ================= MAIN TABLE ================= */}
-        <table className="habit-table">
-          <thead>
-            <tr>
-              <th className="task-col">Task</th>
-              {data.dates.map(date => (
-                <th key={date}>{date.slice(8)}</th>
-              ))}
-            </tr>
-          </thead>
-
-          <tbody>
-            {data.tasks.map(task => (
-              <tr key={task.id}>
-                <td
-                  className="task-col task-clickable"
-                  onClick={() => setSelectedTaskId(task.id) || setShowConfirm(true)}
-                >
-                  {task.name}
-                </td>
-
-                {data.dates.map(date => {
-                  const checklist = task.todoCheckLists.find(
-                    cl => cl.checkDate === date
-                  );
-
-                  return (
-                    <td key={date}>
-                      {checklist ? (
-                        <input
-                          type="checkbox"
-                          checked={checklist.isChecked}
-                          onChange={() => handleToggle(task.id, checklist)}
-                        />
-                      ) : "—"}
-                    </td>
-                  );
-                })}
+        {/* --- MAIN TRACKER TABLE --- */}
+        <div className="table-responsive-wrapper">
+          <table className="habit-table">
+            <thead>
+              <tr>
+                <th className="task-col sticky-header">Task</th>
+                {data.dates.map(date => (
+                  <th key={date} className={date === todayStr ? "today-header" : ""}>
+                    {date.slice(8)}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {data.tasks.map(task => (
+                <tr key={task.id}>
+                  <td className="task-col task-clickable" onClick={() => { setSelectedTaskId(task.id); setShowConfirm(true); }}>
+                    {task.name}
+                  </td>
+                  {data.dates.map(date => {
+                    const cl = task.todoCheckLists.find(c => c.checkDate === date);
+                    return (
+                      <td key={date} className={date === todayStr ? "today-cell" : ""}>
+                        {cl ? (
+                          <input type="checkbox" className="checkbox-custom" checked={cl.isChecked} onChange={() => handleToggle(task.id, cl)} />
+                        ) : <span className="empty-dash">—</span>}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-        <div className="add-task-bottom">
+        {/* TOMBOL NEW TASK DENGAN JARAK AMAN */}
+        <div className="add-task-section">
           <button className="add-task-btn" onClick={() => setShowForm(true)}>
-            ＋ Add Task
+            <span className="plus-icon">+</span> Add New Task
           </button>
         </div>
 
-        {/* ================= MONTH PICKER (BAWAH) ================= */}
+        {/* --- SPACER AGAR HISTORY JAUH DARI TOMBOL --- */}
+        <div className="section-spacer"></div>
+
+        {/* --- SECONDARY SECTION (HISTORY & AVG) --- */}
         <div className="secondary-section">
-          <div className="month-picker">
-            <label>Month:</label>
-            <select value={selectedMonth} onChange={handleMonthChange}>
-              {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
-                <option key={m} value={m}>
-                  {new Date(2026, m - 1).toLocaleString("en-US", { month: "long" })}
-                </option>
-              ))}
-            </select>
+          <div className="history-header">
+            <h2 className="history-title">Activity History</h2>
+            <div className="month-picker">
+              <label>Month:</label>
+              <select value={selectedMonth} onChange={(e) => {
+                const m = parseInt(e.target.value);
+                setSelectedMonth(m); loadReadonlyTable(m); loadAverage(m);
+              }}>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
+                  <option key={m} value={m}>{new Date(2026, m - 1).toLocaleString("en-US", { month: "long" })}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          {/* ================= READ ONLY TABLE ================= */}
           {readonlyData && (
-            <table className="habit-table readonly">
-              <thead>
-                <tr>
-                  <th className="task-col">Task</th>
-                  {readonlyData.dates.map(date => (
-                    <th key={date}>{date.slice(8)}</th>
-                  ))}
-                </tr>
-              </thead>
-
-              <tbody>
-                {readonlyData.tasks.map(task => (
-                  <tr key={task.id}>
-                    <td className="task-col">{task.name}</td>
-                    {readonlyData.dates.map(date => {
-                      const cl = task.todoCheckLists.find(
-                        x => x.checkDate === date
-                      );
-                      return <td key={date}>{cl && cl.isChecked ? "✔" : "—"}</td>;
-                    })}
+            <div className="table-responsive-wrapper readonly-margin">
+              <table className="habit-table readonly-style">
+                <thead>
+                  <tr>
+                    <th className="task-col">Task</th>
+                    {readonlyData.dates.map(date => <th key={date}>{date.slice(8)}</th>)}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-
+                </thead>
+                <tbody>
+                  {readonlyData.tasks.map(task => (
+                    <tr key={task.id}>
+                      <td className="task-col">{task.name}</td>
+                      {readonlyData.dates.map(date => {
+                        const cl = task.todoCheckLists.find(x => x.checkDate === date);
+                        return <td key={date}>{cl?.isChecked ? "✔" : "—"}</td>;
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
 
-          {averageData && (
-            <table className="average-table">
-              <thead>
-                <tr>
-                  <th>Task</th>
-                  <th>Average (%)</th>
-                </tr>
-              </thead>
-              <tbody>
+          {averageData.length > 0 && (
+            <div className="average-card-container">
+              <h3 className="section-subtitle">Monthly Performance</h3>
+              <div className="modern-average-card">
                 {averageData.map(item => (
-                  <tr key={item.taskId}>
-                    <td>{item.taskName}</td>
-                    <td>{item.average.toFixed(2)}%</td>
-                  </tr>
+                  <div key={item.taskId} className="avg-row">
+                    <span className="avg-task-name">{item.taskName}</span>
+                    <div className="avg-progress-bar">
+                      <div className="avg-fill" style={{ width: `${item.average}%` }}></div>
+                    </div>
+                    <span className="avg-percentage">{item.average.toFixed(1)}%</span>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </div>
           )}
         </div>
       </div>
+
+      {/* --- MODAL ADD TASK MODERN --- */}
+      {showForm && (
+        <div className="modal-overlay">
+          <div className="modal-card modal-animate">
+            <div className="modal-header">
+              <h3>Create New Task</h3>
+              <button className="close-x" onClick={() => setShowForm(false)}>&times;</button>
+            </div>
+            <div className="modal-body">
+              <div className="input-group">
+                <label>Task Name</label>
+                <input type="text" placeholder="e.g. Morning Run" value={taskName} onChange={e => setTaskName(e.target.value)} />
+              </div>
+              <div className="input-group">
+                <label>Description (Optional)</label>
+                <textarea placeholder="Write a short detail..." value={taskDesc} onChange={e => setTaskDesc(e.target.value)} />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-cancel-alt" onClick={() => setShowForm(false)}>Cancel</button>
+              <button className="btn-save-alt" onClick={handleAddTask}>Save Task</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL CONFIRM INACTIVE */}
+      {showConfirm && (
+        <div className="modal-overlay">
+          <div className="modal-card confirm-card modal-animate">
+             <div className="modal-body text-center">
+                <div className="warning-icon">!</div>
+                <h3>Inactive Task?</h3>
+                <p>This task will no longer appear in your daily tracker.</p>
+             </div>
+            <div className="modal-footer">
+              <button className="btn-cancel-alt" onClick={() => setShowConfirm(false)}>Cancel</button>
+              <button className="btn-danger-alt" onClick={handleConfirmInactive}>Yes, Inactive</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
