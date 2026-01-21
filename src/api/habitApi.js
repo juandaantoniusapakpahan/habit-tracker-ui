@@ -60,7 +60,7 @@ export async function inactiveTodoTask(taskId) {
 
 export async function fetchHabitTrackerReadonly(userId, month) {
   try {
-    const res = await fetch(`${BASE_URL}/todo-task/get-checklist-byMonth?userId=${userId}&month=${month}`, {
+    const res = await fetch(`${BASE_URL}/todo-task/get-checklist-byMonth?userId=${userId}&month=${month}&history=true`, {
       method: "POST",
       headers: { "Content-Type": "application/json" }
     });
