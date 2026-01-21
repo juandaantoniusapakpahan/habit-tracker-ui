@@ -6,7 +6,8 @@ import {
   uncheckChecklist,
   addTodoTask,
   inactiveTodoTask,
-  getchMontlyTaskAvg
+  getchMontlyTaskAvg,
+  updateTodoTask // Pastikan ini diimport
 } from "../api/habitApi";
 import "./css/HabitTracker.css";
 
@@ -24,6 +25,7 @@ export default function HabitTracker({ userId }) {
   const [taskDesc, setTaskDesc] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
 
   const loadData = async () => {
     const result = await fetchHabitTracker(userId, currentMonth);
@@ -78,10 +80,33 @@ export default function HabitTracker({ userId }) {
     loadData();
   };
 
+  // FUNGSI UPDATE TASK BARU
+  const handleUpdateTask = async () => {
+    if (!taskName.trim()) return alert("Task name wajib diisi");
+    try {
+      await updateTodoTask(selectedTaskId, { name: taskName, description: taskDesc });
+      setShowUpdateForm(false);
+      setTaskName(""); setTaskDesc("");
+      loadData(); // Langsung refresh data
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
   const handleConfirmInactive = async () => {
     await inactiveTodoTask(selectedTaskId);
-    setShowConfirm(false); setSelectedTaskId(null);
+    setShowConfirm(false); 
+    setSelectedTaskId(null);
+    setShowUpdateForm(false); // Tutup form update juga
     loadData();
+  };
+
+  // Membuka form update dengan data awal
+  const openUpdateForm = (task) => {
+    setSelectedTaskId(task.id);
+    setTaskName(task.name);
+    setTaskDesc(task.description || "");
+    setShowUpdateForm(true);
   };
 
  return (
@@ -105,7 +130,8 @@ export default function HabitTracker({ userId }) {
             <tbody>
               {data.tasks.map(task => (
                 <tr key={task.id}>
-                  <td className="task-col task-clickable" onClick={() => { setSelectedTaskId(task.id); setShowConfirm(true); }}>
+                  {/* Perbaikan: Klik nama task memanggil openUpdateForm */}
+                  <td className="task-col task-clickable" onClick={() => openUpdateForm(task)}>
                     {task.name}
                   </td>
                   {data.dates.map(date => {
@@ -124,17 +150,16 @@ export default function HabitTracker({ userId }) {
           </table>
         </div>
 
-        {/* TOMBOL NEW TASK DENGAN JARAK AMAN */}
         <div className="add-task-section">
-          <button className="add-task-btn" onClick={() => setShowForm(true)}>
+          <button className="add-task-btn" onClick={() => {
+            setTaskName(""); setTaskDesc(""); setShowForm(true);
+          }}>
             <span className="plus-icon">+</span> Add New Task
           </button>
         </div>
 
-        {/* --- SPACER AGAR HISTORY JAUH DARI TOMBOL --- */}
         <div className="section-spacer"></div>
 
-        {/* --- SECONDARY SECTION (HISTORY & AVG) --- */}
         <div className="secondary-section">
           <div className="history-header">
             <h2 className="history-title">Activity History</h2>
@@ -194,7 +219,7 @@ export default function HabitTracker({ userId }) {
         </div>
       </div>
 
-      {/* --- MODAL ADD TASK MODERN --- */}
+      {/* MODAL ADD TASK */}
       {showForm && (
         <div className="modal-overlay">
           <div className="modal-card modal-animate">
@@ -220,10 +245,41 @@ export default function HabitTracker({ userId }) {
         </div>
       )}
 
-      {/* MODAL CONFIRM INACTIVE */}
+     {/* --- MODAL UPDATE TASK --- */}
+      {showUpdateForm && (
+        <div className="modal-overlay"> 
+          {/* Overlay ini biasanya punya z-index: 1000 di CSS */}
+          <div className="modal-card modal-animate">
+            <div className="modal-header">
+              <h3>Update Task</h3>
+              <button className="close-x" onClick={() => setShowUpdateForm(false)}>&times;</button>
+            </div>
+            <div className="modal-body">
+              <div className="input-group">
+                <label>Task Name</label>
+                <input type="text" value={taskName} onChange={e => setTaskName(e.target.value)} />
+              </div>
+              <div className="input-group">
+                <label>Description (Optional)</label>
+                <textarea value={taskDesc} onChange={e => setTaskDesc(e.target.value)} />
+              </div>
+            </div>
+            <div className="modal-footer" style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <button className="btn-danger-alt" onClick={() => setShowConfirm(true)}>Delete</button>
+              <div>
+                <button className="btn-cancel-alt" style={{ marginRight: '8px' }} onClick={() => setShowUpdateForm(false)}>Cancel</button>
+                <button className="btn-save-alt" onClick={handleUpdateTask}>Update Task</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- MODAL CONFIRM INACTIVE (Tumpukan paling atas) --- */}
       {showConfirm && (
-        <div className="modal-overlay">
-          <div className="modal-card confirm-card modal-animate">
+        <div className="modal-overlay" style={{ zIndex: 2000 }}> 
+          {/* Kita paksa z-index lebih tinggi dari 1000 */}
+          <div className="modal-card confirm-card modal-animate" style={{ zIndex: 2001 }}>
              <div className="modal-body text-center">
                 <div className="warning-icon">!</div>
                 <h3>Inactive Task?</h3>

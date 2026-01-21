@@ -96,3 +96,22 @@ export async function getchMontlyTaskAvg(userId, month) {
     return []; // Kembalikan array kosong jika error
   }
 }
+
+export async function updateTodoTask(taskId, payload) {
+  const res = await fetch(
+    `${BASE_URL}/todo-task/update?taskId=${taskId}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to update task");
+  }
+
+  return res.json();
+}
