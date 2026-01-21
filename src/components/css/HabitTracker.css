@@ -279,3 +279,21 @@
 }
 
 .text-center { text-align: center; }
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Background gelap transparan */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Dasar z-index untuk semua modal */
+}
+
+/* Pastikan confirm-card selalu terlihat lebih menonjol */
+.confirm-card {
+  border: 2px solid #ff4d4f; /* Tambahan visual untuk penekanan */
+}
