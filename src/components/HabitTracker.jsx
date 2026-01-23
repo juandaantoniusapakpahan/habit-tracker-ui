@@ -7,12 +7,11 @@ import {
   addTodoTask,
   inactiveTodoTask,
   getchMontlyTaskAvg,
-  updateTodoTask // Pastikan ini diimport
+  updateTodoTask 
 } from "../api/habitApi";
 import "./css/HabitTracker.css";
 
-export default function HabitTracker({ userId }) {
-  userId = userId || 1;
+export default function HabitTracker() {
   const currentMonth = new Date().getMonth() + 1;
 
   const [data, setData] = useState(null);
@@ -28,17 +27,17 @@ export default function HabitTracker({ userId }) {
   const [showUpdateForm, setShowUpdateForm] = useState(false);
 
   const loadData = async () => {
-    const result = await fetchHabitTracker(userId, currentMonth);
+    const result = await fetchHabitTracker(currentMonth);
     setData(result);
   };
 
   const loadReadonlyTable = async (month) => {
-    const result = await fetchHabitTrackerReadonly(userId, month);
+    const result = await fetchHabitTrackerReadonly(month);
     setReadonlyData(result);
   };
 
   const loadAverage = async (month) => {
-    const result = await getchMontlyTaskAvg(userId, month);
+    const result = await getchMontlyTaskAvg(month);
     setAverageData(result || []);
   };
 
@@ -46,7 +45,7 @@ export default function HabitTracker({ userId }) {
     loadData();
     loadReadonlyTable(currentMonth);
     loadAverage(currentMonth);
-  }, [userId]);
+  }, []);
 
   if (!data) return <div className="loading-container"><p>Loading Data...</p></div>;
 
@@ -75,19 +74,18 @@ export default function HabitTracker({ userId }) {
 
   const handleAddTask = async () => {
     if (!taskName.trim()) return alert("Task name wajib diisi");
-    await addTodoTask(userId, { name: taskName, description: taskDesc });
+    await addTodoTask({ name: taskName, description: taskDesc });
     setTaskName(""); setTaskDesc(""); setShowForm(false);
     loadData();
   };
 
-  // FUNGSI UPDATE TASK BARU
   const handleUpdateTask = async () => {
     if (!taskName.trim()) return alert("Task name wajib diisi");
     try {
       await updateTodoTask(selectedTaskId, { name: taskName, description: taskDesc });
       setShowUpdateForm(false);
       setTaskName(""); setTaskDesc("");
-      loadData(); // Langsung refresh data
+      loadData(); 
     } catch (error) {
       alert(error.message);
     }
@@ -97,11 +95,10 @@ export default function HabitTracker({ userId }) {
     await inactiveTodoTask(selectedTaskId);
     setShowConfirm(false); 
     setSelectedTaskId(null);
-    setShowUpdateForm(false); // Tutup form update juga
+    setShowUpdateForm(false); 
     loadData();
   };
 
-  // Membuka form update dengan data awal
   const openUpdateForm = (task) => {
     setSelectedTaskId(task.id);
     setTaskName(task.name);
@@ -114,7 +111,6 @@ export default function HabitTracker({ userId }) {
       <div className="habit-container">
         <h1 className="habit-title">{monthName.toUpperCase()}</h1>
 
-        {/* --- MAIN TRACKER TABLE --- */}
         <div className="table-responsive-wrapper">
           <table className="habit-table">
             <thead>
@@ -130,7 +126,6 @@ export default function HabitTracker({ userId }) {
             <tbody>
               {data.tasks.map(task => (
                 <tr key={task.id}>
-                  {/* Perbaikan: Klik nama task memanggil openUpdateForm */}
                   <td className="task-col task-clickable" onClick={() => openUpdateForm(task)}>
                     {task.name}
                   </td>
@@ -219,7 +214,6 @@ export default function HabitTracker({ userId }) {
         </div>
       </div>
 
-      {/* MODAL ADD TASK */}
       {showForm && (
         <div className="modal-overlay">
           <div className="modal-card modal-animate">
@@ -245,10 +239,8 @@ export default function HabitTracker({ userId }) {
         </div>
       )}
 
-     {/* --- MODAL UPDATE TASK --- */}
       {showUpdateForm && (
         <div className="modal-overlay"> 
-          {/* Overlay ini biasanya punya z-index: 1000 di CSS */}
           <div className="modal-card modal-animate">
             <div className="modal-header">
               <h3>Update Task</h3>
@@ -275,10 +267,8 @@ export default function HabitTracker({ userId }) {
         </div>
       )}
 
-      {/* --- MODAL CONFIRM INACTIVE (Tumpukan paling atas) --- */}
       {showConfirm && (
         <div className="modal-overlay" style={{ zIndex: 2000 }}> 
-          {/* Kita paksa z-index lebih tinggi dari 1000 */}
           <div className="modal-card confirm-card modal-animate" style={{ zIndex: 2001 }}>
              <div className="modal-body text-center">
                 <div className="warning-icon">!</div>
