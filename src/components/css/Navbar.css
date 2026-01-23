@@ -36,3 +36,92 @@
 .navbar-menu li.active {
   background: #ffffff33;
 }
+
+
+/* Ikon di Navbar */
+.logout-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  margin-left: 10px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+  list-style: none;
+}
+
+/* Efek saat ikon di hover di navbar biru */
+.logout-icon-wrapper:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* --- Styling Modal (Tetap Modern) --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 350px;
+}
+
+.icon-circle-danger {
+  background-color: rgba(255, 77, 77, 0.1);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 15px auto;
+}
+
+.modal-content h3 {
+  margin: 10px 0;
+  color: #1a1a1a;
+}
+
+.modal-content p {
+  color: #666;
+  margin-bottom: 25px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.modal-actions button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.btn-confirm {
+  background-color: #ff4d4d;
+  color: white;
+}
