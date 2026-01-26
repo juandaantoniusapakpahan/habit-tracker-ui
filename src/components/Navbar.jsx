@@ -1,16 +1,15 @@
 import { useState } from "react";
 import "./css/Navbar.css";
 
-export default function Navbar({ onSelect, onLogout }) {
-  const [active, setActive] = useState("Daily Tracker");
+export default function Navbar({ onSelect, onLogout, activePage }) {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isOpen, setIsOpen] = useState(false); // State untuk mobile menu
 
   const handleClick = (menu) => {
-    setActive(menu);
     onSelect(menu);
+    setIsOpen(false); // Tutup menu setelah memilih (di mobile)
   };
 
-  // Komponen Ikon SVG (Warna stroke diatur lewat CSS atau props)
   const LogOutIcon = ({ size = 20, color = "currentColor" }) => (
     <svg 
       width={size} height={size} 
@@ -28,43 +27,51 @@ export default function Navbar({ onSelect, onLogout }) {
     <>
       <nav className="navbar">
         <div className="navbar-brand">TrackerApp</div>
-        <ul className="navbar-menu">
+
+        {/* Hamburger Icon untuk Mobile */}
+        <div className="menu-toggle" onClick={() => setIsOpen(!isOpen)}>
+          <span className={isOpen ? "bar open" : "bar"}></span>
+          <span className={isOpen ? "bar open" : "bar"}></span>
+          <span className={isOpen ? "bar open" : "bar"}></span>
+        </div>
+
+        {/* Tambahkan class 'open' jika isOpen true */}
+        <ul className={`navbar-menu ${isOpen ? "open" : ""}`}>
           {["Daily Tracker", "Money Management"].map((menu) => (
             <li
               key={menu}
-              className={active === menu ? "active" : ""}
+              className={activePage === menu ? "active" : ""}
               onClick={() => handleClick(menu)}
             >
               {menu}
             </li>
           ))}
           
-          {/* Ikon Logout Putih di Navbar */}
-          <li className="logout-icon-wrapper" onClick={() => setShowLogoutModal(true)}>
+          <li className="logout-button-mobile" onClick={() => {
+            setShowLogoutModal(true);
+            setIsOpen(false);
+          }}>
+            Logout
+          </li>
+
+          <li className="logout-icon-desktop" onClick={() => setShowLogoutModal(true)}>
             <LogOutIcon size={20} color="white" />
           </li>
         </ul>
       </nav>
 
-      {/* Pop-up Modal */}
+      {/* Modal Logout */}
       {showLogoutModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <div className="modal-header">
-              <div className="icon-circle-danger">
-                {/* Ikon Merah di dalam Modal sebagai peringatan */}
-                <LogOutIcon size={32} color="#ff4d4d" />
-              </div>
+            <div className="icon-circle-danger">
+              <LogOutIcon size={32} color="#ff4d4d" />
             </div>
             <h3>Keluar dari Aplikasi?</h3>
             <p>Sesi Anda akan berakhir dan Anda harus login kembali.</p>
             <div className="modal-actions">
-              <button className="btn-cancel" onClick={() => setShowLogoutModal(false)}>
-                Batal
-              </button>
-              <button className="btn-confirm" onClick={onLogout}>
-                Keluar
-              </button>
+              <button className="btn-cancel" onClick={() => setShowLogoutModal(false)}>Batal</button>
+              <button className="btn-confirm" onClick={onLogout}>Keluar</button>
             </div>
           </div>
         </div>

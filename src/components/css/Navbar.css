@@ -3,125 +3,94 @@
   justify-content: space-between;
   align-items: center;
   background: #4f46e5;
-  padding: 10px 20px;
+  padding: 0 20px;
+  height: 60px; /* Tinggi tetap agar konsisten */
   color: white;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
 }
 
 .navbar-brand {
   font-weight: bold;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
 }
 
 .navbar-menu {
   list-style: none;
   display: flex;
-  gap: 20px;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
 }
 
 .navbar-menu li {
   cursor: pointer;
-  padding: 6px 12px;
+  padding: 8px 15px;
   border-radius: 6px;
-  transition: background 0.2s;
+  transition: 0.3s;
+  font-weight: 500;
 }
 
-.navbar-menu li:hover {
-  background: rgba(255,255,255,0.2);
-}
+.navbar-menu li:hover { background: rgba(255,255,255,0.1); }
+.navbar-menu li.active { background: rgba(255,255,255,0.2); }
 
-.navbar-menu li.active {
-  background: #ffffff33;
-}
-
-
-/* Ikon di Navbar */
-.logout-icon-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  margin-left: 10px;
+/* Toggle Mobile Button */
+.menu-toggle {
+  display: none; /* Sembunyi di desktop */
+  flex-direction: column;
   cursor: pointer;
-  border-radius: 8px;
-  transition: background-color 0.2s;
-  list-style: none;
+  gap: 5px;
 }
 
-/* Efek saat ikon di hover di navbar biru */
-.logout-icon-wrapper:hover {
-  background-color: rgba(255, 255, 255, 0.15);
+.bar {
+  width: 25px;
+  height: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 2px;
 }
 
-/* --- Styling Modal (Tetap Modern) --- */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
+/* Tombol Logout Mobile vs Desktop */
+.logout-button-mobile { display: none; color: #ff9999; }
+.logout-icon-desktop { display: flex; align-items: center; }
 
-.modal-content {
-  background: white;
-  padding: 30px;
-  border-radius: 16px;
-  text-align: center;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  width: 90%;
-  max-width: 350px;
-}
+/* --- RESPONSIVE MOBILE --- */
+@media (max-width: 768px) {
+  .menu-toggle { display: flex; }
 
-.icon-circle-danger {
-  background-color: rgba(255, 77, 77, 0.1);
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 0 auto 15px auto;
-}
+  .navbar-menu {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    background: #4f46e5;
+    flex-direction: column;
+    gap: 0;
+    padding: 10px 0;
+    clip-path: circle(0% at 100% 0); /* Animasi sembunyi */
+    transition: clip-path 0.5s ease-in-out;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
 
-.modal-content h3 {
-  margin: 10px 0;
-  color: #1a1a1a;
-}
+  .navbar-menu.open {
+    clip-path: circle(150% at 100% 0); /* Animasi muncul */
+  }
 
-.modal-content p {
-  color: #666;
-  margin-bottom: 25px;
-}
+  .navbar-menu li {
+    width: 90%;
+    text-align: center;
+    padding: 15px 0;
+    border-radius: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
 
-.modal-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.modal-actions button {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn-cancel {
-  background-color: #f3f4f6;
-  color: #4b5563;
-}
-
-.btn-confirm {
-  background-color: #ff4d4d;
-  color: white;
+  .logout-icon-desktop { display: none; }
+  .logout-button-mobile { display: block; font-weight: bold; }
+  
+  /* Animasi Hamburger ke 'X' */
+  .bar.open:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+  .bar.open:nth-child(2) { opacity: 0; }
+  .bar.open:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
 }
