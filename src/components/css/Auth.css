@@ -107,3 +107,81 @@
         font-size: 24px;
     }
 }
+
+/* --- TAMBAHAN CSS GITHUB & DIVIDER --- */
+
+.auth-divider {
+    margin: 20px 0;
+    position: relative;
+    text-align: center;
+}
+
+.auth-divider::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #e1e1e1;
+    z-index: 1;
+}
+
+.auth-divider span {
+    background: #ffffff;
+    padding: 0 15px;
+    color: #999;
+    font-size: 12px;
+    font-weight: 600;
+    position: relative;
+    z-index: 2;
+}
+
+.btn-github {
+    background: #24292e; /* Warna Hitam GitHub */
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: background 0.3s ease;
+    width: 100%;
+}
+
+.btn-github:hover {
+    background: #161b22;
+}
+
+.btn-github svg {
+    fill: white;
+}
+
+.btn-google {
+    background: #ffffff;
+    color: #444;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.btn-google:hover {
+    background: #f8f8f8;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-color: #ccc;
+}

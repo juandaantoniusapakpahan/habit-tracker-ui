@@ -71,3 +71,69 @@
 .modal-actions button { flex: 1; padding: 10px; border-radius: 6px; cursor: pointer; border: none; font-weight: bold; }
 .btn-confirm { background: #e74c3c; color: white; }
 .btn-cancel { background: #eee; }
+
+
+/* Container pembungkus tabel agar bisa scroll */
+.table-scroll-container {
+  /* display: block;
+  max-height: 350px; 
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  position: relative;
+  margin-top: 10px; */
+  display: block;
+  /* Ubah dari 350px ke 900px */
+  max-height: 600px; 
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  position: relative;
+}
+
+/* Membuat Header Tetap di Atas (Sticky) */
+.data-table thead th {
+  position: sticky;
+  top: 0;
+  background-color: #f8f9fa; /* Warna header */
+  z-index: 10;
+  box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);
+}
+
+/* Membuat Footer Tetap di Bawah (Sticky) */
+/* Membuat Footer Tetap di Bawah (Sticky) dan Tertutup Rapat */
+.data-table tfoot td {
+  position: sticky;
+  bottom: 0;
+  background-color: #ffffff !important; /* Warna solid untuk menutup teks yang lewat */
+  z-index: 11; /* Naikkan z-index agar di atas baris body */
+  box-shadow: 0 -4px 10px rgba(0,0,0,0.05); /* Shadow lebih tebal agar terlihat memisahkan */
+  border-top: 2px solid #eee;
+  font-weight: bold;
+  opacity: 1; /* Pastikan tidak ada transparansi */
+}
+.data-table {
+  width: 100%;
+  border-collapse: separate; /* Ubah ke separate agar sticky bekerja lebih stabil */
+  border-spacing: 0; 
+}
+.data-table td {
+  height: 45px; /* Mengunci tinggi baris */
+  padding: 8px 12px;
+  box-sizing: border-box;
+}
+
+/* Mempercantik Scrollbar untuk Chrome/Safari */
+.table-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+.table-scroll-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.table-scroll-container::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+.table-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
+}

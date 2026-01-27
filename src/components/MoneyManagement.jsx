@@ -114,7 +114,6 @@ const MoneyManagement = () => {
 
   // --- ACTIONS ---
   const updateLocalTotals = (data, action, oldData = null) => {
-    // 1. Update Footer Tabel (Current Month Total)
     setCurrentMonthTotal(prev => {
       let nIn = prev.in, nOut = prev.out;
       if (action === 'add') {
@@ -128,34 +127,24 @@ const MoneyManagement = () => {
       return { in: nIn, out: nOut };
     });
 
-    // 2. Update Cards Summary (apiSummary)
     setApiSummary(prev => {
       const updated = { ...prev };
-      // Daftar key yang perlu diupdate (Minggu ini, Bulan ini, 6 bulan, Tahun ini)
-      // Kecuali 'lastMonth' karena data bulan lalu tidak berubah oleh transaksi hari ini
       const keysToUpdate = ['week', 'month', 'sixMonth', 'year'];
-
       keysToUpdate.forEach(key => {
         let nIn = updated[key].in;
         let nOut = updated[key].out;
-
         if (action === 'add') {
           data.transactionType === 'INCOME' ? nIn += data.amount : nOut += data.amount;
         } else if (action === 'delete') {
           data.transactionType === 'INCOME' ? nIn -= data.amount : nOut -= data.amount;
         } else if (action === 'update') {
-          // Hapus nilai lama, tambah nilai baru
           oldData.transactionType === 'INCOME' ? nIn -= oldData.amount : nOut -= oldData.amount;
           data.transactionType === 'INCOME' ? nIn += data.amount : nOut += data.amount;
         }
-
         updated[key] = { in: nIn, out: nOut };
       });
-
       return updated;
     });
-
-    // 3. Refresh Chart
     loadAnalysis(selectedYearAnalysis);
   };
 
@@ -170,20 +159,18 @@ const MoneyManagement = () => {
     }
   };
 
-const handleDelete = async () => {
-  const { id, type } = showDeleteModal;
-  if (type === 'trans') {
-    const target = transactions.find(t => t.id === id);
-    const res = await deleteTransaction(id);
-    if (res?.status === "success") {
-      setTransactions(prev => prev.filter(t => t.id !== id));
-      // Pastikan target (data lama) dikirim untuk mengurangi saldo di Card
-      updateLocalTotals(target, 'delete');
+  const handleDelete = async () => {
+    const { id, type } = showDeleteModal;
+    if (type === 'trans') {
+      const target = transactions.find(t => t.id === id);
+      const res = await deleteTransaction(id);
+      if (res?.status === "success") {
+        setTransactions(prev => prev.filter(t => t.id !== id));
+        updateLocalTotals(target, 'delete');
+      }
     }
-  } 
-  // ... sisa kode kategori ...
-  setShowDeleteModal({ show: false, id: null, type: 'trans' });
-};
+    setShowDeleteModal({ show: false, id: null, type: 'trans' });
+  };
 
   if (loading) return <div className="loading-screen">Memuat Data Keuangan...</div>;
 
@@ -198,7 +185,7 @@ const handleDelete = async () => {
         <StatCard label="Tahun Ini" data={apiSummary.year} color="#e74c3c" />
       </div>
 
-      {/* 2. TRANSAKSI BULAN INI */}
+      {/* 2. TRANSAKSI BULAN INI (DENGAN SCROLL) */}
       <div className="card-panel">
         <div className="panel-header">
           <h3>Transaksi Bulan Ini</h3>
@@ -208,31 +195,34 @@ const handleDelete = async () => {
             setEditingId(newRow.id);
           }}>+ Baris Baru</button>
         </div>
-        <table className="data-table">
-          <thead>
-            <tr><th>Tanggal</th><th>Kategori</th><th>Deskripsi</th><th>Tipe</th><th>Nominal</th><th>Aksi</th></tr>
-          </thead>
-          <tbody>
-            {transactions.map(t => (
-              <EditableRow
-                key={t.id} data={{ ...t, categoryName: getCategoryName(t.categoryId) }} categories={categories}
-                isEditing={editingId === t.id} onSave={handleSaveTransaction}
-                onCancel={() => { if (t.isNew) setTransactions(prev => prev.filter(x => x.id !== t.id)); setEditingId(null); }}
-                onEdit={() => setEditingId(t.id)} onDelete={() => setShowDeleteModal({ show: true, id: t.id, type: 'trans' })}
-              />
-            ))}
-          </tbody>
-          <tfoot>
-            <tr className="footer-total" style={{ background: '#f9f9f9', fontWeight: 'bold' }}>
-              <td colSpan="4">TOTAL BULAN INI</td>
-              <td className="txt-income">In: {currentMonthTotal.in.toLocaleString()}</td>
-              <td className="txt-expense">Out: {currentMonthTotal.out.toLocaleString()}</td>
-            </tr>
-          </tfoot>
-        </table>
+        
+        <div className="table-scroll-container">
+          <table className="data-table">
+            <thead>
+              <tr><th>Tanggal</th><th>Kategori</th><th>Deskripsi</th><th>Tipe</th><th>Nominal</th><th>Aksi</th></tr>
+            </thead>
+            <tbody>
+              {transactions.map(t => (
+                <EditableRow
+                  key={t.id} data={{ ...t, categoryName: getCategoryName(t.categoryId) }} categories={categories}
+                  isEditing={editingId === t.id} onSave={handleSaveTransaction}
+                  onCancel={() => { if (t.isNew) setTransactions(prev => prev.filter(x => x.id !== t.id)); setEditingId(null); }}
+                  onEdit={() => setEditingId(t.id)} onDelete={() => setShowDeleteModal({ show: true, id: t.id, type: 'trans' })}
+                />
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="footer-total">
+                <td colSpan="4">TOTAL BULAN INI</td>
+                <td className="txt-income">In: {currentMonthTotal.in.toLocaleString()}</td>
+                <td className="txt-expense">Out: {currentMonthTotal.out.toLocaleString()}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
       </div>
 
-      {/* 3. RIWAYAT & FILTER (DIKEMBALIKAN) */}
+      {/* 3. RIWAYAT & FILTER */}
       <div className="card-panel">
         <h3>Riwayat & Filter</h3>
         <div className="filter-bar">
@@ -266,7 +256,7 @@ const handleDelete = async () => {
         </table>
       </div>
 
-      {/* 4. ANALISIS BAR CHART & TABLE */}
+      {/* 4. ANALISIS TAHUNAN */}
       <div className="card-panel">
         <div className="panel-header">
           <h3>Analisis Keuangan Tahunan</h3>
