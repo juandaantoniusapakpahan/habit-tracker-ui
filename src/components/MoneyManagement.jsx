@@ -16,6 +16,10 @@ import {
 } from "../api/moneyApi";
 
 const MoneyManagement = () => {
+  const [pageSize, setPageSize] = useState(13);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalData, setTotalData] = useState(0);
+  const [totalPage, setTotalPage] = useState(0);
   // --- STATE DATA ---
   const [transactions, setTransactions] = useState([]);
   const [historyData, setHistoryData] = useState([]);
@@ -100,18 +104,31 @@ const MoneyManagement = () => {
   useEffect(() => { loadAnalysis(selectedYearAnalysis); }, [selectedYearAnalysis]);
 
   useEffect(() => {
-    const getFiltered = async () => {
-      const data = await fetchFilteredTransactions({
-        start: filterDate.start,
-        end: filterDate.end,
-        income: filterType.income,
-        expense: filterType.expense
-      });
-      setHistoryData(data || []);
-    };
-    getFiltered();
-  }, [filterDate, filterType]);
+  const getFiltered = async () => {
+    const res = await fetchFilteredTransactions({
+      start: filterDate.start,
+      end: filterDate.end,
+      income: filterType.income,
+      expense: filterType.expense,
+      page: currentPage,
+      size: pageSize // Ini angka 13
+    });
 
+    if (res && res.status === "success" && res.data) {
+      setHistoryData(res.data.financeTransactions || []);
+      
+      const realTotalData = Number(res.data.totalData) || 0;
+      setTotalData(realTotalData);
+
+      // HITUNG SENDIRI: 15 / 13 = 1.15 -> Round up jadi 2
+      const calculatedTotalPage = Math.ceil(realTotalData / pageSize);
+      
+      // Jika API salah (ngirim 7), kita pakai hitungan kita (2)
+      setTotalPage(calculatedTotalPage > 0 ? calculatedTotalPage : 1);
+    }
+  };
+  getFiltered();
+}, [filterDate, filterType, currentPage, pageSize]);
   // --- ACTIONS ---
   const updateLocalTotals = (data, action, oldData = null) => {
     setCurrentMonthTotal(prev => {
@@ -195,7 +212,7 @@ const MoneyManagement = () => {
             setEditingId(newRow.id);
           }}>+ Baris Baru</button>
         </div>
-        
+
         <div className="table-scroll-container">
           <table className="data-table">
             <thead>
@@ -224,7 +241,18 @@ const MoneyManagement = () => {
 
       {/* 3. RIWAYAT & FILTER */}
       <div className="card-panel">
-        <h3>Riwayat & Filter</h3>
+        <div className="panel-header">
+          <h3>Riwayat & Filter</h3>
+          <div className="page-size-selector" style={{ fontSize: '13px' }}>
+            <span>Tampilkan: </span>
+            <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(0); }}>
+              <option value={13}>13 Baris</option>
+              <option value={25}>25 Baris</option>
+              <option value={50}>50 Baris</option>
+            </select>
+          </div>
+        </div>
+
         <div className="filter-bar">
           <div className="filter-group">
             <input type="date" value={filterDate.start} onChange={e => setFilterDate({ ...filterDate, start: e.target.value })} />
@@ -240,20 +268,52 @@ const MoneyManagement = () => {
             </label>
           </div>
         </div>
-        <table className="data-table">
-          <thead>
-            <tr><th>Tanggal</th><th>Kategori</th><th>Deskripsi</th><th>Tipe</th><th>Nominal</th></tr>
-          </thead>
-          <tbody>
-            {historyData.length > 0 ? historyData.map(t => (
-              <tr key={t.id}>
-                <td>{t.transactionDate}</td><td>{getCategoryName(t.categoryId)}</td><td>{t.description || "-"}</td>
-                <td><span className={`badge ${t.transactionType.toLowerCase()}`}>{t.transactionType}</span></td>
-                <td>Rp {Number(t.amount).toLocaleString()}</td>
-              </tr>
-            )) : <tr><td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>Data tidak ditemukan</td></tr>}
-          </tbody>
-        </table>
+
+        <div className="table-scroll-container" style={{ maxHeight: '650px' }}>
+          <table className="data-table">
+            <thead>
+              <tr><th>Tanggal</th><th>Kategori</th><th>Deskripsi</th><th>Tipe</th><th>Nominal</th></tr>
+            </thead>
+            <tbody>
+              {historyData.length > 0 ? historyData.map(t => (
+                <tr key={t.id}>
+                  <td>{t.transactionDate}</td>
+                  <td>{getCategoryName(t.categoryId)}</td>
+                  <td>{t.description || "-"}</td>
+                  <td><span className={`badge ${t.transactionType.toLowerCase()}`}>{t.transactionType}</span></td>
+                  <td>Rp {Number(t.amount).toLocaleString()}</td>
+                </tr>
+              )) : <tr><td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>Data tidak ditemukan</td></tr>}
+            </tbody>
+          </table>
+        </div>
+
+        {/* --- UI NAVIGATION PAGINATION --- */}
+        <div className="pagination-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '15px' }}>
+          <span style={{ fontSize: '13px', color: '#666' }}>Total: <strong>{totalData}</strong> data</span>
+          <div className="pagination-btns" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <button
+              className="btn-icon"
+              disabled={currentPage === 0}
+              onClick={() => setCurrentPage(p => p - 1)}
+            >
+              « Prev
+            </button>
+
+            <span style={{ fontSize: '13px', fontWeight: 'bold' }}>
+              {currentPage + 1} / {totalPage || 1}
+            </span>
+
+            <button
+              className="btn-icon"
+              // Gunakan Number() untuk memastikan totalPage dibaca sebagai angka
+              disabled={currentPage >= (Number(totalPage) - 1)}
+              onClick={() => setCurrentPage(p => p + 1)}
+            >
+              Next »
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* 4. ANALISIS TAHUNAN */}

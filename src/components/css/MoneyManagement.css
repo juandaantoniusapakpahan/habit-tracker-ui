@@ -137,3 +137,13 @@
 .table-scroll-container::-webkit-scrollbar-thumb:hover {
   background: #aaa;
 }
+
+.pagination-btns button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.pagination-footer {
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+

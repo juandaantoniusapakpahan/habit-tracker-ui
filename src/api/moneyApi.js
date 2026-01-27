@@ -71,26 +71,26 @@ export async function fetchCurrentMonthTransactions() {
 }
 
 export async function fetchFilteredTransactions(filter) {
-    try {
-        const response = await fetch(`${TRANS_URL}/getAllType`, {
-            method: "POST", 
-            headers: getAuthHeaders(),
-            body: JSON.stringify({
-                start: filter.start,
-                end: filter.end,
-                income: filter.income,
-                expense: filter.expense
-            })
-        });
-        const result = await response.json();
-        if (result.status === "success") {
-            return result.data.financeTransactions;
-        }
-        return [];
-    } catch (error) {
-        console.error("Error filtering transactions:", error);
-        return [];
-    }
+  try {
+    console.log("Mengirim Size ke API:", filter.size); 
+
+  const url = `${TRANS_URL}/getAllType?page=${filter.page}&size=${filter.size}&sort=transactionDate,desc`;
+  
+  const response = await fetch(url, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({
+      start: filter.start,
+      end: filter.end,
+      income: filter.income,
+      expense: filter.expense
+    })
+  });
+  return await response.json();
+  } catch (error) {
+    console.error("Error filtering transactions:", error);
+    return null;
+  }
 }
 
 export async function fetchAllCategories() {
